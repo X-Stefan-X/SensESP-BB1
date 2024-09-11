@@ -96,8 +96,23 @@ void setup() {
                      "Seacock Valve Close State")  // Value description
       ));
 
+//Part Lights:
+//Const for the PWM
+const uint8_t freq = 5000;
+const uint8_t resolution = 8;
 
 
+//try to get data from signalk
+// Level for lights Hoppelandkallekoje
+ 
+ // GPIO number to use for the PWM output
+const uint8_t kPWMOutputPinHK = 1;
+ledcAttach(kPWMOutputPinHK, freq, resolution, 0);
+
+auto hlkk = new SKValueListener<float>("environment....");
+hlkk->connect_to(new LambdaConsumer<float>(
+    [](float input) { ledcWrite(kPWMOutputPinHK, input); }}));
+    //{ debugD("hlkk: %f", input); }}));
 
 
 /*
