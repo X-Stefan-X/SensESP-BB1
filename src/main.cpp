@@ -12,6 +12,7 @@
 #include "sensesp/sensors/digital_input.h"
 #include "sensesp/sensors/sensor.h"
 #include "sensesp/signalk/signalk_output.h"
+#include "sensesp/siganlk/signalk_input.h"
 #include "sensesp/system/lambda_consumer.h"
 #include "sensesp_app_builder.h"
 
@@ -27,12 +28,79 @@ void setup() {
   SensESPAppBuilder builder;
   sensesp_app = (&builder)
                     // Set a custom hostname for the app.
-                    ->set_hostname("my-sensesp-project")
+                    ->set_hostname("sensesp-bb1")
                     // Optionally, hard-code the WiFi and Signal K server
                     // settings. This is normally not needed.
                     //->set_wifi("My WiFi SSID", "my_wifi_password")
                     //->set_sk_server("192.168.10.3", 80)
                     ->get_app();
+
+
+    // GPIO numbers to use for the PWM outputs
+    // Hoppelandkallekoje
+    const uint8_t kPWMOutputPinHK = 1;
+    // Salon 1 After
+    const uint8_t kPWMOutputPinS1 = 1;
+    // Salon 2 Bug
+    const uint8_t kPWMOutputPinS2 = 1;
+    // Pantry
+    const uint8_t kPWMOutputPinPa = 1;
+    
+    
+
+  // Digital Input Seacock Valve Open
+  const uint8_t kDigitalInputSCVOPin = 13;
+  const unsigned int kDigitalInputSCVOInterval = 1000;
+
+  // Configure the pin. Replace this with your custom library initialization
+  // code!
+  pinMode(kDigitalInputSCVOPin, INPUT_PULLUP);
+
+  // Define a new RepeatSensor that reads the pin every 100 ms.
+  // Replace the lambda function internals with the input routine of your custom
+  // library.
+
+  auto* digital_input_SCVO = new RepeatSensor<bool>(
+      kDigitalInputSCVOInterval,
+      [kDigitalInput2Pin]() { return digitalRead(kDigitalInputSCVOPin); });
+  
+  // Connect digital input 2 to Signal K output.
+  digital_input_SCVO->connect_to(new SKOutputBool(
+      "sensors.Seacockvalve.Pantry.Open.value",          // Signal K path
+      "/Sensors/Seacockvalve/Pantry/Open/Value",         // configuration path
+      new SKMetadata("",                       // No units for boolean values
+                     "Seacock Valve Open State")  // Value description
+      ));
+
+  // Digital Input Seacock Valve Close
+  const uint8_t kDigitalInputSCVCPin = 13;
+  const unsigned int kDigitalInputSCVCInterval = 1000;
+
+  // Configure the pin. Replace this with your custom library initialization
+  // code!
+  pinMode(kDigitalInputSCVCPin, INPUT_PULLUP);
+
+  // Define a new RepeatSensor that reads the pin every 100 ms.
+  // Replace the lambda function internals with the input routine of your custom
+  // library.
+
+  auto* digital_input_SCVC = new RepeatSensor<bool>(
+      kDigitalInputSCVCInterval,
+      [kDigitalInput2Pin]() { return digitalRead(kDigitalInputSCVCPin); });
+  
+  // Connect digital input 2 to Signal K output.
+  digital_input_SCVC->connect_to(new SKOutputBool(
+      "sensors.Seacockvalve.Pantry.Close.value",          // Signal K path
+      "/Sensors/Seacockvalve/Pantry/Close/Value",         // configuration path
+      new SKMetadata("",                       // No units for boolean values
+                     "Seacock Valve Close State")  // Value description
+      ));
+
+
+
+
+
+/*
 
   // GPIO number to use for the analog input
   const uint8_t kAnalogInputPin = 36;
@@ -116,7 +184,7 @@ void setup() {
       new SKMetadata("",                       // No units for boolean values
                      "Digital input 2 value")  // Value description
       ));
-
+/*
 }
 
 void loop() { app.tick(); }
