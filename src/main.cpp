@@ -85,14 +85,70 @@ void setup() {
                      "Seacock Valve Close State")  // Value description
       ));
 
-//Part Lights:
-//try to get data from signalk
-// Level for lights Hoppelandkallekoje
- 
- // GPIO number to use for the PWM output
 
-auto hlkk = new SKValueListener<float>("environment....");
-hlkk->connect_to(new LambdaConsumer<float>(
+
+// Digital Input Water Sensor
+  const uint8_t kDigitalInputWSPin = 13;
+  const unsigned int kDigitalInputWSInterval = 1000;
+
+  // Configure the pin. Replace this with your custom library initialization
+  // code!
+  pinMode(kDigitalInputWSPin, INPUT_PULLUP);
+
+  // Define a new RepeatSensor that reads the pin every 100 ms.
+  // Replace the lambda function internals with the input routine of your custom
+  // library.
+
+  auto* digital_input_WS = new RepeatSensor<bool>(
+      kDigitalInputWSInterval,
+      [kDigitalInputSCVCPin]() { return digitalRead(kDigitalInputWSPin); });
+  
+  // Connect digital input 2 to Signal K output.
+  digital_input_WS->connect_to(new SKOutputBool(
+      "sensors.Watersensor.Pantry.value",          // Signal K path
+      "/Sensors/Watersensor/Pantry/Value",         // configuration path
+      new SKMetadata("",                       // No units for boolean values
+                     "Seacock Valve Close State")  // Value description
+      ));
+
+//Part Lights:
+//
+// Level for lights Hoppelandkallekoje
+auto lhlkk = new SKValueListener<float>("environment....");
+lhlkk->connect_to(new LambdaConsumer<float>(
+    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+
+//Salon
+// 1 Bug
+auto lsb = new SKValueListener<float>("environment....");
+lsb->connect_to(new LambdaConsumer<float>(
+    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+// 2 After
+auto lsa = new SKValueListener<float>("environment....");
+lsa->connect_to(new LambdaConsumer<float>(
+    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+
+//Pantry
+//Oven
+auto lpo = new SKValueListener<float>("environment....");
+lpo->connect_to(new LambdaConsumer<float>(
+    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+
+
+
+//Seatheater
+//Starting Bug
+auto sh1 = new SKValueListener<float>("environment....");
+sh1->connect_to(new LambdaConsumer<float>(
+    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+auto sh2 = new SKValueListener<float>("environment....");
+sh2->connect_to(new LambdaConsumer<float>(
+    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+auto sh3 = new SKValueListener<float>("environment....");
+sh3->connect_to(new LambdaConsumer<float>(
+    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+auto sh4 = new SKValueListener<float>("environment....");
+sh4->connect_to(new LambdaConsumer<float>(
     [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
 
 }
