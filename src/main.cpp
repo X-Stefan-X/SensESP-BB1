@@ -38,7 +38,7 @@ void setup() {
 
 
   // Digital Input Seacock Valve Open
-  const uint8_t kDigitalInputSCVOPin = 13;
+  const uint8_t kDigitalInputSCVOPin = 36;
   const unsigned int kDigitalInputSCVOInterval = 1000;
 
   // Configure the pin. Replace this with your custom library initialization
@@ -62,7 +62,7 @@ void setup() {
       ));
 
   // Digital Input Seacock Valve Close
-  const uint8_t kDigitalInputSCVCPin = 13;
+  const uint8_t kDigitalInputSCVCPin = 39;
   const unsigned int kDigitalInputSCVCInterval = 1000;
 
   // Configure the pin. Replace this with your custom library initialization
@@ -88,7 +88,7 @@ void setup() {
 
 
 // Digital Input Water Sensor
-  const uint8_t kDigitalInputWSPin = 13;
+  const uint8_t kDigitalInputWSPin = 34;
   const unsigned int kDigitalInputWSInterval = 1000;
 
   // Configure the pin. Replace this with your custom library initialization
@@ -116,23 +116,23 @@ void setup() {
 // Level for lights Hoppelandkallekoje
 auto lhlkk = new SKValueListener<float>("environment.inside.hoppelandkallekoje.mid.light.value");
 lhlkk->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(32, input); }));
 
 //Salon
 // 1 Bug
 auto lsb = new SKValueListener<float>("environment.inside.salon.port.bug.light.value");
 lsb->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(33, input); }));
 // 2 After
 auto lsa = new SKValueListener<float>("environment.inside.salon.port.mid.light.value");
 lsa->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(25, input); }));
 
 //Pantry
 //Oven
 auto lpo = new SKValueListener<float>("environment.inside.pantry.oven.light.value");
 lpo->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(26, input); }));
 
 
 
@@ -140,16 +140,16 @@ lpo->connect_to(new LambdaConsumer<float>(
 //Starting Bug
 auto sh1 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.1.value");
 sh1->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(27, input); }));
 auto sh2 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.2.value");
 sh2->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(14, input); }));
 auto sh3 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.3.value");
 sh3->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(12, input); }));
 auto sh4 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.4.value");
 sh4->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(23, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(13, input); }));
 
 }
 
