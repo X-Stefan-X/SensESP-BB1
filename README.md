@@ -30,5 +30,6 @@ SH Channel 3: 12
 SH Channel 4: 12
 
 
+Gesamt: 11 PINs
 
 
