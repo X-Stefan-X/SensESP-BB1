@@ -17,6 +17,19 @@
 #include "sensesp_app_builder.h"
 #include "pwmWrite.h"
 
+#include <SparkFunSX1509.h>
+const byte SX1509_ADDRESS = 0x3E; // SX1509 I2C address
+SX1509 io;
+const byte SX1509_PIN_lhlkk = 0; // SX1509 pin for lights Hoppelandkallekoje
+const byte SX1509_PIN_lsb = 1; // SX1509 pin for lights Salon Bug
+const byte SX1509_PIN_lsa = 2; // SX1509 pin for lights Salon After
+const byte SX1509_PIN_lpo = 3; // SX1509 pin for lights Pantry Oven
+const byte SX1509_PIN_sh1 = 4; // SX1509 pin for lights Seatheater 1
+const byte SX1509_PIN_sh2 = 5; // SX1509 pin for lights Seatheater 2
+const byte SX1509_PIN_sh3 = 6; // SX1509 pin for lights Seatheater 3
+const byte SX1509_PIN_sh4 = 7; // SX1509 pin for lights Seatheater 4
+
+
 using namespace sensesp;
 
 reactesp::ReactESP app;
