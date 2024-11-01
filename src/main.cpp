@@ -16,6 +16,10 @@
 #include "sensesp/system/lambda_consumer.h"
 #include "sensesp_app_builder.h"
 #include "pwmWrite.h"
+#include "controllers/ssd1306_display.h"
+
+#define SDA_PIN 5
+#define SCL_PIN 4
 
 using namespace sensesp;
 
@@ -116,7 +120,7 @@ void setup() {
 // Level for lights Hoppelandkallekoje
 auto lhlkk = new SKValueListener<float>("environment.inside.hoppelandkallekoje.mid.light.value");
 lhlkk->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(32, input); }));
+    [](float input) { Pwm pwm = Pwm(); pwm.write(39, input); }));
 
 //Salon
 // 1 Bug

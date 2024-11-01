@@ -18,7 +18,7 @@ Close: 39
 Watersensor PIN: 34
 
 Lights PWM PINs:
-Hoppelandkallekoje: 32
+Hoppelandkallekoje: 39
 Salon Port Bug: 33
 Salon Port After: 25
 Pantry Oven: 26
