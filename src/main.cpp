@@ -16,14 +16,8 @@
 #include "sensesp/system/lambda_consumer.h"
 #include "sensesp_app_builder.h"
 #include "pwmWrite.h"
-#include "controllers/ssd1306_display.h"
-
-#define SDA_PIN 5
-#define SCL_PIN 4
 
 using namespace sensesp;
-
-reactesp::ReactESP app;
 
 // The setup function performs one-time application initialization.
 void setup() {
@@ -38,10 +32,11 @@ void setup() {
                     // settings. This is normally not needed.
                     //->set_wifi("My WiFi SSID", "my_wifi_password")
                     //->set_sk_server("192.168.10.3", 80)
+                    ->enable_system_info_sensors()
                     ->get_app();
 
 
-  // Digital Input Seacock Valve Open
+   // Digital Input Seacock Valve Open
   const uint8_t kDigitalInputSCVOPin = 36;
   const unsigned int kDigitalInputSCVOInterval = 1000;
 
@@ -157,4 +152,4 @@ sh4->connect_to(new LambdaConsumer<float>(
 
 }
 
-void loop() { app.tick(); }
+void loop() { SensESPBaseApp::get_event_loop()->tick(); }
