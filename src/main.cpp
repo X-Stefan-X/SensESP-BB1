@@ -114,42 +114,68 @@ void setup() {
 //
 // Level for lights Hoppelandkallekoje
 auto lhlkk = new SKValueListener<float>("environment.inside.hoppelandkallekoje.mid.light.value");
-lhlkk->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(39, input); }));
+auto* lhlkk_consumer = new LambdaConsumer<float>([](float input) {
+    Pwm pwm = Pwm();
+    pwm.write(39, input);
+});
+lhlkk->connect_to(lhlkk_consumer);
 
 //Salon
 // 1 Bug
 auto lsb = new SKValueListener<float>("environment.inside.salon.port.bug.light.value");
-lsb->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(33, input); }));
+auto* lsb_consumer = new LambdaConsumer<float>([](float input) {
+    Pwm pwm = Pwm();
+    pwm.write(33, input); 
+});
+lsb->connect_to(lsb_consumer);
+
 // 2 After
 auto lsa = new SKValueListener<float>("environment.inside.salon.port.mid.light.value");
-lsa->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(25, input); }));
+auto* lsa_consumer = new LambdaConsumer<float>([](float input){
+    Pwm pwm = Pwm();
+    pwm.write(25, input); 
+});
+lsa->connect_to(lsa_consumer);
 
 //Pantry
 //Oven
 auto lpo = new SKValueListener<float>("environment.inside.pantry.oven.light.value");
-lpo->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(26, input); }));
-
+auto lpo_consumer = new LambdaConsumer<float>([](float input) {
+    Pwm pwm = Pwm(); 
+    pwm.write(26, input); 
+});
+lsa->connect_to(lpo_consumer);
 
 
 //Seatheater
 //Starting Bug
 auto sh1 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.1.value");
-sh1->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(27, input); }));
-auto sh2 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.2.value");
-sh2->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(14, input); }));
-auto sh3 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.3.value");
-sh3->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(12, input); }));
-auto sh4 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.4.value");
-sh4->connect_to(new LambdaConsumer<float>(
-    [](float input) { Pwm pwm = Pwm(); pwm.write(13, input); }));
+auto* sh1_consumer = new LambdaConsumer<float>([](float input) { 
+    Pwm pwm = Pwm(); 
+    pwm.write(27, input); 
+});
+sh1->connect_to(sh1_consumer);
 
+auto sh2 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.2.value");
+auto* sh2_conusmer = new LambdaConsumer<float>([](float input) { 
+    Pwm pwm = Pwm(); 
+    pwm.write(14, input); 
+});
+sh2->connect_to(sh2_conusmer);
+
+auto sh3 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.3.value");
+auto* sh3_consumer = new LambdaConsumer<float>([](float input) { 
+    Pwm pwm = Pwm(); 
+    pwm.write(12, input); 
+});
+sh3->connect_to(sh3_consumer);
+
+auto sh4 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.4.value");
+auto* sh4_consumer = new LambdaConsumer<float>([](float input) { 
+    Pwm pwm = Pwm(); 
+    pwm.write(13, input); 
+});
+sh4->connect_to(sh4_consumer);
 }
 
 void loop() { SensESPBaseApp::get_event_loop()->tick(); }
