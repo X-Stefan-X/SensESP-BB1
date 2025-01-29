@@ -116,6 +116,7 @@ void setup() {
 auto lhlkk = new SKValueListener<float>("environment.inside.hoppelandkallekoje.mid.light.value");
 auto* lhlkk_consumer = new LambdaConsumer<float>([](float input) {
     Pwm pwm = Pwm();
+    pwm.setFrequency(39,200000);
     pwm.write(39, input);
 });
 lhlkk->connect_to(lhlkk_consumer);
@@ -125,6 +126,7 @@ lhlkk->connect_to(lhlkk_consumer);
 auto lsb = new SKValueListener<float>("environment.inside.salon.port.bug.light.value");
 auto* lsb_consumer = new LambdaConsumer<float>([](float input) {
     Pwm pwm = Pwm();
+    pwm.setFrequency(33,200000);
     pwm.write(33, input); 
 });
 lsb->connect_to(lsb_consumer);
@@ -133,6 +135,7 @@ lsb->connect_to(lsb_consumer);
 auto lsa = new SKValueListener<float>("environment.inside.salon.port.mid.light.value");
 auto* lsa_consumer = new LambdaConsumer<float>([](float input){
     Pwm pwm = Pwm();
+    pwm.setFrequency(25,200000);
     pwm.write(25, input); 
 });
 lsa->connect_to(lsa_consumer);
@@ -142,6 +145,7 @@ lsa->connect_to(lsa_consumer);
 auto lpo = new SKValueListener<float>("environment.inside.pantry.oven.light.value");
 auto lpo_consumer = new LambdaConsumer<float>([](float input) {
     Pwm pwm = Pwm(); 
+    pwm.setFrequency(26,200000);
     pwm.write(26, input); 
 });
 lsa->connect_to(lpo_consumer);
@@ -152,6 +156,7 @@ lsa->connect_to(lpo_consumer);
 auto sh1 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.1.value");
 auto* sh1_consumer = new LambdaConsumer<float>([](float input) { 
     Pwm pwm = Pwm(); 
+    pwm.setFrequency(27,200000);
     pwm.write(27, input); 
 });
 sh1->connect_to(sh1_consumer);
@@ -159,6 +164,7 @@ sh1->connect_to(sh1_consumer);
 auto sh2 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.2.value");
 auto* sh2_conusmer = new LambdaConsumer<float>([](float input) { 
     Pwm pwm = Pwm(); 
+    pwm.setFrequency(14,200000);
     pwm.write(14, input); 
 });
 sh2->connect_to(sh2_conusmer);
@@ -166,6 +172,7 @@ sh2->connect_to(sh2_conusmer);
 auto sh3 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.3.value");
 auto* sh3_consumer = new LambdaConsumer<float>([](float input) { 
     Pwm pwm = Pwm(); 
+    pwm.setFrequency(12,200000);
     pwm.write(12, input); 
 });
 sh3->connect_to(sh3_consumer);
@@ -173,6 +180,7 @@ sh3->connect_to(sh3_consumer);
 auto sh4 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.4.value");
 auto* sh4_consumer = new LambdaConsumer<float>([](float input) { 
     Pwm pwm = Pwm(); 
+    pwm.setFrequency(13,200000);
     pwm.write(13, input); 
 });
 sh4->connect_to(sh4_consumer);
