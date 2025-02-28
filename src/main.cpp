@@ -17,6 +17,24 @@
 #include "sensesp_app_builder.h"
 #include "pwmWrite.h"
 
+
+//////////////////////////////////////
+#define SEACOCK_OPEN_PIN 36
+#define SEACOCK_CLOSE_PIN 39
+
+#define WATERSENESOR_PIN 33
+
+#define LIGHTS_HOPPELANDEKALLEKOJE_PIN 39
+#define LIGHTS_SALON_PORT_BUG_PIN 33
+#define LIGHTS_SALON_PORT_AFTER_PIN 25
+#define LIGHTS_PANTRY_OVEN_PIN 26
+
+#define SEATHEATER_1_PIN 27
+#define SEATHEATER_2_PIN 14
+#define SEATHEATER_3_PIN 12
+#define SEATHEATER_4_PIN 13
+//////////////////////////////////////
+
 using namespace sensesp;
 
 // The setup function performs one-time application initialization.
