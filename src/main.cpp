@@ -13,26 +13,29 @@
 #include "sensesp/sensors/sensor.h"
 #include "sensesp/signalk/signalk_output.h"
 #include "sensesp/signalk/signalk_value_listener.h"
+#include "sensesp/system/valueconsumer.h"
 #include "sensesp/system/lambda_consumer.h"
 #include "sensesp_app_builder.h"
-#include "pwmWrite.h"
+#include <Adafruit_PWMServoDriver.h>
 
 
 //////////////////////////////////////
-#define SEACOCK_OPEN_PIN 36
-#define SEACOCK_CLOSE_PIN 39
+#define SEACOCK_OPEN_PIN D0
+#define SEACOCK_CLOSE_PIN D1
 
-#define WATERSENESOR_PIN 33
+#define WATERSENESOR_PIN D3
 
-#define LIGHTS_HOPPELANDEKALLEKOJE_PIN 39
-#define LIGHTS_SALON_PORT_BUG_PIN 33
-#define LIGHTS_SALON_PORT_AFTER_PIN 25
-#define LIGHTS_PANTRY_OVEN_PIN 26
+#define LIGHTS_HOPPELANDEKALLEKOJE_PIN 0
+#define LIGHTS_SALON_PORT_BUG_PIN 1
+#define LIGHTS_SALON_PORT_AFTER_PIN 2
+#define LIGHTS_PANTRY_OVEN_PIN 3
+#define LIGHTS_PANTRY_SINK_PIN 4
+#define LIGHTS_SALON_FLOOR_PIN 5
 
-#define SEATHEATER_1_PIN 27
-#define SEATHEATER_2_PIN 14
-#define SEATHEATER_3_PIN 12
-#define SEATHEATER_4_PIN 13
+#define SEATHEATER_1_PIN 8
+#define SEATHEATER_2_PIN 9
+#define SEATHEATER_3_PIN 10
+#define SEATHEATER_4_PIN 11
 //////////////////////////////////////
 
 using namespace sensesp;
@@ -50,37 +53,32 @@ void setup() {
                     // settings. This is normally not needed.
                     //->set_wifi("My WiFi SSID", "my_wifi_password")
                     //->set_sk_server("192.168.10.3", 80)
-                    ->enable_system_info_sensors()
+                    //->enable_system_info_sensors()
+                    ->enable_ota("ThisIsMyPassword")
                     ->get_app();
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
    // Digital Input Seacock Valve Open
-  const uint8_t kDigitalInputSCVOPin = 36;
-  const unsigned int kDigitalInputSCVOInterval = 1000;
+  const uint8_t kDigitalInputSCVOPin = SEACOCK_OPEN_PIN;
+  const unsigned int kInterval = 1000;
 
-  // Configure the pin. Replace this with your custom library initialization
-  // code!
-  pinMode(kDigitalInputSCVOPin, INPUT_PULLUP);
-
-  // Define a new RepeatSensor that reads the pin every 100 ms.
-  // Replace the lambda function internals with the input routine of your custom
-  // library.
-
-  auto* digital_input_SCVO = new RepeatSensor<bool>(
-      kDigitalInputSCVOInterval,
+    pinMode(kDigitalInputSCVOPin, INPUT_PULLUP);
+    auto* digital_input_SCVO = new RepeatSensor<bool>(
+        kInterval,
       [kDigitalInputSCVOPin]() { return digitalRead(kDigitalInputSCVOPin); });
-  
-  // Connect digital input 2 to Signal K output.
-  digital_input_SCVO->connect_to(new SKOutputBool(
+
+    // Connect digital input 2 to Signal K output.
+    digital_input_SCVO->connect_to(new SKOutputBool(
       "sensors.Seacockvalve.Pantry.Open.value",          // Signal K path
       "/Sensors/Seacockvalve/Pantry/Open/Value",         // configuration path
       new SKMetadata("",                       // No units for boolean values
                      "Seacock Valve Open State")  // Value description
-      ));
+    ));
+
+
 
   // Digital Input Seacock Valve Close
-  const uint8_t kDigitalInputSCVCPin = 39;
-  const unsigned int kDigitalInputSCVCInterval = 1000;
+  const uint8_t kDigitalInputSCVCPin = SEACOCK_CLOSE_PIN;
 
   // Configure the pin. Replace this with your custom library initialization
   // code!
@@ -91,7 +89,7 @@ void setup() {
   // library.
 
   auto* digital_input_SCVC = new RepeatSensor<bool>(
-      kDigitalInputSCVCInterval,
+    kInterval,
       [kDigitalInputSCVCPin]() { return digitalRead(kDigitalInputSCVCPin); });
   
   // Connect digital input 2 to Signal K output.
@@ -103,103 +101,117 @@ void setup() {
       ));
 
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Digital Input Water Sensor
-  const uint8_t kDigitalInputWSPin = 34;
-  const unsigned int kDigitalInputWSInterval = 1000;
+    const uint8_t kWATERSENESOR_PIN = WATERSENESOR_PIN;
 
-  // Configure the pin. Replace this with your custom library initialization
-  // code!
-  pinMode(kDigitalInputWSPin, INPUT_PULLUP);
+  pinMode(kWATERSENESOR_PIN, INPUT_PULLUP);
 
   // Define a new RepeatSensor that reads the pin every 100 ms.
   // Replace the lambda function internals with the input routine of your custom
   // library.
 
   auto* digital_input_WS = new RepeatSensor<bool>(
-      kDigitalInputWSInterval,
-      [kDigitalInputSCVCPin]() { return digitalRead(kDigitalInputWSPin); });
+    kInterval, 
+    [kWATERSENESOR_PIN]() { return digitalRead(kWATERSENESOR_PIN); });
   
   // Connect digital input 2 to Signal K output.
   digital_input_WS->connect_to(new SKOutputBool(
       "sensors.Watersensor.Pantry.value",          // Signal K path
       "/Sensors/Watersensor/Pantry/Value",         // configuration path
       new SKMetadata("",                       // No units for boolean values
-                     "Seacock Valve Close State")  // Value description
+                     "Watersensor Pantry State")  // Value description
       ));
+    
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Begin PWM
+    auto* pwm = new Adafruit_PWMServoDriver();
+    pwm->begin();
+    pwm->setOscillatorFrequency(27000000);
+    pwm->setPWMFreq(1600);  // This is the maximum PWM frequency
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Part Lights:
 //
-// Level for lights Hoppelandkallekoje
-auto lhlkk = new SKValueListener<float>("environment.inside.hoppelandkallekoje.mid.light.value");
-auto* lhlkk_consumer = new LambdaConsumer<float>([](float input) {
-    Pwm pwm = Pwm();
-    pwm.setFrequency(39,200000);
-    pwm.write(39, input);
+// Hoppelandkallekoje
+auto lhlkk = new FloatSKListener("environment.inside.hoppelandkallekoje.mid.light.value", CHANGE);
+auto* lhlkk_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(LIGHTS_HOPPELANDEKALLEKOJE_PIN, 0, input);
+    debugI("Hoppelandkallekoje: %f", input);
 });
 lhlkk->connect_to(lhlkk_consumer);
 
-//Salon
-// 1 Bug
-auto lsb = new SKValueListener<float>("environment.inside.salon.port.bug.light.value");
-auto* lsb_consumer = new LambdaConsumer<float>([](float input) {
-    Pwm pwm = Pwm();
-    pwm.setFrequency(33,200000);
-    pwm.write(33, input); 
+//Salon 1 Bug
+auto lsb = new SKValueListener<float>("environment.inside.salon.port.bug.light.value", CHANGE);
+auto* lsb_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(LIGHTS_SALON_PORT_BUG_PIN, 0, input);
+    debugI("Salon Port Bug: %f", input);
 });
 lsb->connect_to(lsb_consumer);
 
-// 2 After
-auto lsa = new SKValueListener<float>("environment.inside.salon.port.mid.light.value");
-auto* lsa_consumer = new LambdaConsumer<float>([](float input){
-    Pwm pwm = Pwm();
-    pwm.setFrequency(25,200000);
-    pwm.write(25, input); 
+// Salon 2 After
+auto lsa = new SKValueListener<float>("environment.inside.salon.port.mid.light.value", CHANGE);
+auto* lsa_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(LIGHTS_SALON_PORT_AFTER_PIN, 0, input);
+    debugI("Salon Port After: %f", input);
 });
 lsa->connect_to(lsa_consumer);
 
 //Pantry
 //Oven
-auto lpo = new SKValueListener<float>("environment.inside.pantry.oven.light.value");
-auto lpo_consumer = new LambdaConsumer<float>([](float input) {
-    Pwm pwm = Pwm(); 
-    pwm.setFrequency(26,200000);
-    pwm.write(26, input); 
+auto lpo = new SKValueListener<float>("environment.inside.pantry.oven.light.value", CHANGE);
+auto* lpo_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(LIGHTS_PANTRY_OVEN_PIN, 0, input);
+    debugI("Pantry Oven: %f", input);
 });
 lsa->connect_to(lpo_consumer);
 
+//Pantry Sink
+auto lps = new SKValueListener<float>("environment.inside.pantry.sink.light.value", CHANGE);
+auto* lps_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(LIGHTS_PANTRY_SINK_PIN, 0, input);
+    debugI("Pantry Sink: %f", input);
+});
+lps->connect_to(lps_consumer);
 
+//Salon Floor
+auto lsf = new SKValueListener<float>("environment.inside.salon.floor.light.value", CHANGE);
+auto* lsf_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(LIGHTS_SALON_FLOOR_PIN, 0, input);
+    debugI("Salon Floor: %f", input);
+});
+lsf->connect_to(lsf_consumer);
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Seatheater
 //Starting Bug
-auto sh1 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.1.value");
-auto* sh1_consumer = new LambdaConsumer<float>([](float input) { 
-    Pwm pwm = Pwm(); 
-    pwm.setFrequency(27,200000);
-    pwm.write(27, input); 
+auto sh1 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.1.value", CHANGE);
+auto* sh1_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(SEATHEATER_1_PIN, 0, input);
+    debugI("SeatHeater 1: %f", input);
 });
 sh1->connect_to(sh1_consumer);
 
-auto sh2 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.2.value");
-auto* sh2_conusmer = new LambdaConsumer<float>([](float input) { 
-    Pwm pwm = Pwm(); 
-    pwm.setFrequency(14,200000);
-    pwm.write(14, input); 
+auto sh2 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.2.value", CHANGE);
+auto* sh2_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(SEATHEATER_2_PIN, 0, input);
+    debugI("SeatHeater 2: %f", input);
 });
-sh2->connect_to(sh2_conusmer);
+sh2->connect_to(sh2_consumer);
 
-auto sh3 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.3.value");
-auto* sh3_consumer = new LambdaConsumer<float>([](float input) { 
-    Pwm pwm = Pwm(); 
-    pwm.setFrequency(12,200000);
-    pwm.write(12, input); 
+auto sh3 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.3.value", CHANGE);
+auto* sh3_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(SEATHEATER_3_PIN, 0, input);
+    debugI("SeatHeater 3: %f", input);
 });
 sh3->connect_to(sh3_consumer);
 
-auto sh4 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.4.value");
-auto* sh4_consumer = new LambdaConsumer<float>([](float input) { 
-    Pwm pwm = Pwm(); 
-    pwm.setFrequency(13,200000);
-    pwm.write(13, input); 
+auto sh4 = new SKValueListener<float>("environment.inside.salon.port.bug.seatheater.4.value", CHANGE);
+auto* sh4_consumer = new LambdaConsumer<float>([pwm](float input) {
+    pwm->setPWM(SEATHEATER_4_PIN, 0, input);
+    debugI("SeatHeater 4: %f", input);
 });
 sh4->connect_to(sh4_consumer);
 }

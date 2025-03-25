@@ -7,7 +7,8 @@ Funktionen:
 - Steuerung Licht Pantry, Bb Saln und Hopelandkallekoje
 - Wassersensor
   
-
+- Strommessung der Sitzheizung
+- Strommessung der Beleuchtung 27V!!!
 
 # PIN Liste
 
