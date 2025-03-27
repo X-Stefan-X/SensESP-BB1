@@ -54,7 +54,7 @@ void setup() {
                     //->set_wifi("My WiFi SSID", "my_wifi_password")
                     //->set_sk_server("192.168.10.3", 80)
                     //->enable_system_info_sensors()
-                    ->enable_ota("ThisIsMyPassword")
+                    ->enable_ota("ThisIsMyPassword!")
                     ->get_app();
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
