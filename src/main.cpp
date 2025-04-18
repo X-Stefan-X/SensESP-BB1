@@ -25,13 +25,13 @@ Pwm pwm = Pwm(); // Create a Pwm object
 #define SEACOCK_CLOSE_PIN D1
 #define WATERSENESOR_PIN D3
 
-#define LIGHTS_HOPPELANDEKALLEKOJE_PIN 0
-#define LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN 1
-#define LIGHTS_SALON_PORT_BUG_PIN 2
-#define LIGHTS_SALON_PORT_AFTER_PIN 3
-#define LIGHTS_PANTRY_OVEN_PIN 4
-#define LIGHTS_PANTRY_SINK_PIN 5
-#define LIGHTS_SALON_FLOOR_PIN 6
+#define LIGHTS_HOPPELANDEKALLEKOJE_PIN D4
+#define LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN D5
+#define LIGHTS_SALON_PORT_BUG_PIN D6
+#define LIGHTS_SALON_PORT_AFTER_PIN D7
+#define LIGHTS_PANTRY_OVEN_PIN D8
+#define LIGHTS_PANTRY_SINK_PIN D9
+#define LIGHTS_SALON_FLOOR_PIN D10
 //////////////////////////////////////
 
 using namespace sensesp;
@@ -44,7 +44,7 @@ void setup() {
   SensESPAppBuilder builder;
   sensesp_app = (&builder)
                     // Set a custom hostname for the app.
-                    ->set_hostname("sensesp-bb1")
+                    ->set_hostname("sensesp-BB!")
                     // Optionally, hard-code the WiFi and Signal K server
                     // settings. This is normally not needed.
                     //->set_wifi("My WiFi SSID", "my_wifi_password")
@@ -113,7 +113,7 @@ void setup() {
 //
 // Hoppelandkallekoje Spot
 auto lhlkk = std::make_shared<SKValueListener<float>>(
-    "electrical.inside.hoppelandkallekoje.mid.light.value", CHANGE);
+    "electrical.inside.hoppelandkallekoje.spot.light.value", CHANGE);
     auto lhlkk_consumer = std::make_shared<LambdaConsumer<float>>(
     [](float input) {
       pwm.setFrequency(LIGHTS_HOPPELANDEKALLEKOJE_PIN, 1000); // Set frequency to 1kHz
@@ -136,7 +136,7 @@ lhlkksl->connect_to(lhlkksl_consumer);
 
 //Salon 1 Bug
 auto lsb = std::make_shared<SKValueListener<float>>(
-    "electrical.inside.salon.port.bug.light.value", CHANGE);
+    "electrical.inside.salon.port.bow.light.value", CHANGE);
 auto* lsb_consumer = new LambdaConsumer<float>([](float input) {
     pwm.setFrequency(LIGHTS_SALON_PORT_BUG_PIN, 1000); // Set frequency to 1kHz
     pwm.write(LIGHTS_SALON_PORT_BUG_PIN, input);
@@ -146,7 +146,7 @@ lsb->connect_to(lsb_consumer);
 
 // Salon 2 After
 auto lsa = std::make_shared<SKValueListener<float>>(
-    "electrical.inside.salon.port.after.light.value", CHANGE);
+    "electrical.inside.salon.port.stern.light.value", CHANGE);
 auto* lsa_consumer = new LambdaConsumer<float>([](float input) {
     pwm.setFrequency(LIGHTS_SALON_PORT_AFTER_PIN, 1000); // Set frequency to 1kHz
     pwm.write(LIGHTS_SALON_PORT_AFTER_PIN, input);
@@ -177,7 +177,7 @@ lps->connect_to(lps_consumer);
 
 //Salon Floor
 auto lsf = std::make_shared<SKValueListener<float>>(
-    "electrical.inside.salon.floor.light.value", CHANGE);
+    "electrical.inside.salon.port.floor.light.value", CHANGE);
 auto* lsf_consumer = new LambdaConsumer<float>([](float input) {
     pwm.setFrequency(LIGHTS_SALON_FLOOR_PIN, 1000); // Set frequency to 1kHz
     pwm.write(LIGHTS_SALON_FLOOR_PIN, input);
