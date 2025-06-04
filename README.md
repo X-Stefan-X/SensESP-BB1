@@ -13,6 +13,6 @@ Funktionen:
 
 
 
-
-
-
+11 PWM
+1 Watersensor
+2 Seacock 

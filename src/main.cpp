@@ -22,7 +22,7 @@
 #include <Adafruit_PWMServoDriver.h>
 
 //Pwm pwm = Pwm(); // Create a Pwm object
-auto pwm = Adafruit_PWMServoDriver(0x40); // Create a Pwm object with the I2C address 0x40
+auto* pwm = new Adafruit_PWMServoDriver(0x40); // Create a Pwm object with the I2C address 0x40
 
 //////////////////////////////////////
 // Sensoren
@@ -37,9 +37,13 @@ auto pwm = Adafruit_PWMServoDriver(0x40); // Create a Pwm object with the I2C ad
 #define LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN 1
 #define LIGHTS_SALON_PORT_BUG_PIN 2
 #define LIGHTS_SALON_PORT_AFTER_PIN 3
+
 #define LIGHTS_PANTRY_OVEN_PIN 4
-#define LIGHTS_PANTRY_SINK_PIN 5
-#define LIGHTS_SALON_FLOOR_PIN 6
+#define LIGHTS_PANTRY_CORNER_PIN 5
+#define LIGHTS_PANTRY_SINK_PIN 6
+#define LIGHTS_SALON_FLOOR_PIN 7
+
+// 8-11 are free
 
 #define SEATHEATER_1_PIN 12
 #define SEATHEATER_2_PIN 13
@@ -70,9 +74,9 @@ void setup() {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Initial PWM 
-pwm.begin(); // Initialize the PWM driver
-pwm.setOscillatorFrequency(27000000);
-pwm.setPWMFreq(1600);
+pwm->begin(); // Initialize the PWM driver
+pwm->setOscillatorFrequency(27000000);
+pwm->setPWMFreq(1600);
 
 
 const unsigned int kInterval = 10000;
@@ -140,7 +144,7 @@ auto lhlkk = std::make_shared<SKValueListener<float>>(
     "electrical.inside.hoppelandkallekoje.spot.light.value", CHANGE);
     auto lhlkk_consumer = std::make_shared<LambdaConsumer<float>>(
     [](float input) {
-      pwm.setPWM(LIGHTS_HOPPELANDEKALLEKOJE_PIN, input, 0);
+      pwm->setPWM(LIGHTS_HOPPELANDEKALLEKOJE_PIN, input, 0);
       debugI("Hoppelandkallekoje Spot: %f", input);
     });
 lhlkk->connect_to(lhlkk_consumer);
@@ -151,7 +155,7 @@ auto lhlkksl = std::make_shared<SKValueListener<float>>(
     "electrical.inside.hoppelandkallekoje.ledstrip.light.value", CHANGE);
 auto lhlkksl_consumer = std::make_shared<LambdaConsumer<float>>(
     [](float input) {
-      pwm.setPWM(LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN, input, 0);
+      pwm->setPWM(LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN, input, 0);
       debugI("Hoppelandkallekoje Streifen: %f", input);
     });
 lhlkksl->connect_to(lhlkksl_consumer);
@@ -160,7 +164,7 @@ lhlkksl->connect_to(lhlkksl_consumer);
 auto lsb = std::make_shared<SKValueListener<float>>(
     "electrical.inside.salon.port.bow.light.value", CHANGE);
 auto* lsb_consumer = new LambdaConsumer<float>([](float input) {
-    pwm.setPWM(LIGHTS_SALON_PORT_BUG_PIN, input, 0);
+    pwm->setPWM(LIGHTS_SALON_PORT_BUG_PIN, input, 0);
     debugI("Salon Port Bug: %f", input);
 });
 lsb->connect_to(lsb_consumer);
@@ -169,7 +173,7 @@ lsb->connect_to(lsb_consumer);
 auto lsa = std::make_shared<SKValueListener<float>>(
     "electrical.inside.salon.port.stern.light.value", CHANGE);
 auto* lsa_consumer = new LambdaConsumer<float>([](float input) {
-    pwm.setPWM(LIGHTS_SALON_PORT_AFTER_PIN, input, 0);
+    pwm->setPWM(LIGHTS_SALON_PORT_AFTER_PIN, input, 0);
     debugI("Salon Port After: %f", input);
 });
 lsa->connect_to(lsa_consumer);
@@ -179,55 +183,64 @@ lsa->connect_to(lsa_consumer);
 auto lpo = std::make_shared<SKValueListener<float>>(
     "electrical.inside.pantry.oven.light.value", CHANGE);
 auto* lpo_consumer = new LambdaConsumer<float>([](float input) {
-  pwm.setPWM(LIGHTS_PANTRY_OVEN_PIN, input, 0);  
+  pwm->setPWM(LIGHTS_PANTRY_OVEN_PIN, input, 0);  
     debugI("Pantry Oven: %f", input);
 });
 lpo->connect_to(lpo_consumer);
+
+//Corner
+auto lpc = std::make_shared<SKValueListener<float>>(
+    "electrical.inside.pantry.corner.light.value", CHANGE);
+auto* lpc_consumer = new LambdaConsumer<float>([](float input) {
+    pwm->setPWM(LIGHTS_PANTRY_CORNER_PIN, input, 0);
+    debugI("Pantry Corner: %f", input);
+});
+lpc->connect_to(lpc_consumer);
 
 //Pantry Sink
 auto lps = std::make_shared<SKValueListener<float>>(
     "electrical.inside.pantry.sink.light.value", CHANGE);
 auto* lps_consumer = new LambdaConsumer<float>([](float input) {
-    pwm.setPWM(LIGHTS_PANTRY_SINK_PIN, input, 0);
+    pwm->setPWM(LIGHTS_PANTRY_SINK_PIN, input, 0);
     debugI("Pantry Sink: %f", input);
 });
 lps->connect_to(lps_consumer);
 
-//Salon Floor
+//Salon Floor Port
 auto lsf = std::make_shared<SKValueListener<float>>(
     "electrical.inside.salon.port.floor.light.value", CHANGE);
 auto* lsf_consumer = new LambdaConsumer<float>([](float input) {
-    pwm.setPWM(LIGHTS_SALON_FLOOR_PIN, input, 0);
-    debugI("Salon Floor: %f", input);
+    pwm->setPWM(LIGHTS_SALON_FLOOR_PIN, input, 0);
+    debugI("Salon Floor Port: %f", input);
 });
 lsf->connect_to(lsf_consumer);
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Starting Bug
 auto sh1 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.1.value", CHANGE, "Seatheater 1");
 auto* sh1_consumer = new LambdaConsumer<float>([](float input) {
-    pwm.setPWM(SEATHEATER_1_PIN, input, 0);
+    pwm->setPWM(SEATHEATER_1_PIN, input, 0);
     debugI("SeatHeater 1: %f", input);
 });
 sh1->connect_to(sh1_consumer);
 
 auto sh2 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.2.value", CHANGE, "Seatheater 2");
 auto* sh2_consumer = new LambdaConsumer<float>([](float input) {
-    pwm.setPWM(SEATHEATER_2_PIN, input, 0);
+    pwm->setPWM(SEATHEATER_2_PIN, input, 0);
     debugI("SeatHeater 2: %f", input);
 });
 sh2->connect_to(sh2_consumer);
 
 auto sh3 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.3.value", CHANGE, "Seatheater 3");
 auto* sh3_consumer = new LambdaConsumer<float>([](float input) {
-    pwm.setPWM(SEATHEATER_3_PIN, input, 0);
+    pwm->setPWM(SEATHEATER_3_PIN, input, 0);
     debugI("SeatHeater 3: %f", input);
 });
 sh3->connect_to(sh3_consumer);
 
 auto sh4 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.4.value", CHANGE, "Seatheater 4");
 auto* sh4_consumer = new LambdaConsumer<float>([](float input) {
-    pwm.setPWM(SEATHEATER_4_PIN, input, 0);
+    pwm->setPWM(SEATHEATER_4_PIN, input, 0);
     debugI("SeatHeater 4: %f", input);
 });
 sh4->connect_to(sh4_consumer);
