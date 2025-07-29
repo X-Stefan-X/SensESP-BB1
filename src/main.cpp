@@ -33,19 +33,20 @@ auto* pwm = new Adafruit_PWMServoDriver(0x40); // Create a Pwm object with the I
 
 
 // Sensoren
-#define SEACOCK_OPEN_PIN D7
-#define SEACOCK_CLOSE_PIN D8
-#define WATERSENESOR_PIN D9
-// D10 hat noch ein Kabel dran, aber ist nicht belegt
+#define SEACOCK_OPEN_PIN D10 //weiß
+#define SEACOCK_CLOSE_PIN D9 //grau
+#define WATERSENSOR_PIN D8 //gelb
+// D10 hat noch ein blaues Kabel dran, aber ist nicht belegt
 
 // Aktoren am PCA9685
 
-#define LIGHTS_HOPPELANDEKALLEKOJE_PIN 0
-#define LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN 1
-#define LIGHTS_SALON_PORT_BUG_PIN 2
-#define LIGHTS_SALON_PORT_AFTER_PIN 3
+#define LIGHTS_HOPPELANDEKALLEKOJE_PIN 0 //grau
+#define LIGHTS_PANTRY_OVEN_PIN 1 //gelb
+#define LIGHTS_SALON_PORT_BUG_PIN 2 //weiß
+#define LIGHTS_SALON_PORT_AFTER_PIN 3 //braun
 
-#define LIGHTS_PANTRY_OVEN_PIN 4
+
+#define LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN 4
 #define LIGHTS_PANTRY_CORNER_PIN 5
 #define LIGHTS_PANTRY_SINK_PIN 6
 #define LIGHTS_SALON_FLOOR_PIN 7
@@ -216,11 +217,11 @@ const unsigned int kInterval = 10000;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Digital Input Water Sensor
-  const uint8_t kWATERSENESOR_PIN = WATERSENESOR_PIN;
-  pinMode(kWATERSENESOR_PIN, INPUT_PULLUP);
+  const uint8_t kWATERSENSOR_PIN = WATERSENSOR_PIN;
+  pinMode(kWATERSENSOR_PIN, INPUT_PULLUP);
 
   auto digital_input_WS = std::make_shared<RepeatSensor<bool>>(
-    kInterval, [kWATERSENESOR_PIN]() { return digitalRead(kWATERSENESOR_PIN); });
+    kInterval, [kWATERSENSOR_PIN]() { return digitalRead(kWATERSENSOR_PIN); });
 
   auto di_WS_metadata = std::make_shared<SKMetadata>(
       "",  // No units for boolean values
