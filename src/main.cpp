@@ -29,11 +29,14 @@
 auto* pwm = new Adafruit_PWMServoDriver(0x40); // Create a Pwm object with the I2C address 0x40
 
 //////////////////////////////////////
-// Sensoren
-#define SEACOCK_OPEN_PIN D0
-#define SEACOCK_CLOSE_PIN D1
-#define WATERSENESOR_PIN D3
+// I2C D4 und D5
 
+
+// Sensoren
+#define SEACOCK_OPEN_PIN D7
+#define SEACOCK_CLOSE_PIN D8
+#define WATERSENESOR_PIN D9
+// D10 hat noch ein Kabel dran, aber ist nicht belegt
 
 // Aktoren am PCA9685
 
