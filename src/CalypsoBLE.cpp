@@ -18,7 +18,7 @@
 
 namespace sensesp {
 
-    esp_task_wdt_config_t wdt_config = {
+    esp_task_wdt_config_t Calypso_wdt_config = {
             .timeout_ms = 30000, // 30 seconds
             .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // All cores
             .trigger_panic = false
@@ -103,12 +103,12 @@ namespace sensesp {
     }
 
     void CalypsoBLE::init() {
-        esp_task_wdt_config_t wdt_config = {
+        esp_task_wdt_config_t Calypso_wdt_config = {
             .timeout_ms = 30000, // 30 seconds
             .idle_core_mask = (1 << portNUM_PROCESSORS) - 1, // All cores
             .trigger_panic = false
         };
-        esp_task_wdt_init(&wdt_config);
+        esp_task_wdt_init(&Calypso_wdt_config);
         esp_task_wdt_add(NULL);
         if (!BLE.begin()) {
             debugE("starting BLE failed!");
@@ -142,6 +142,7 @@ namespace sensesp {
         while (true) {
             // Watchdog Reload
             esp_task_wdt_reset();
+            vTaskDelay(100 / portTICK_PERIOD_MS); // Wait for 100 milliseconds before starting the continuous read
             if (!BLECalypso.peripheral.connected()) {
                 debugE("Peripheral disconnected");
                 this->setZeroCalypsoData();

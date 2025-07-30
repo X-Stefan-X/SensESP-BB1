@@ -16,6 +16,7 @@
 #include "sensesp/system/valueconsumer.h"
 #include "sensesp/system/lambda_consumer.h"
 #include "sensesp_app_builder.h"
+#include "sensesp/controllers/system_status_controller.h"
 //#include <pwmWrite.h>
 
 #include <Wire.h>
@@ -82,6 +83,11 @@ float read_wind_angle() {
 float read_battery_level() {
       return calypso->CalypsoData.BatteryLevel;
     }
+void calypso_task(void* pvParameters) {
+  CalypsoBLE* calypso = static_cast<CalypsoBLE*>(pvParameters);
+  calypso->continuousRead();
+  vTaskDelete(NULL); // Option, falls Task irgendwann beendet wird
+}
 
 // The setup function performs one-time application initialization.
 void setup() {
@@ -103,21 +109,22 @@ void setup() {
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-calypso->init();
+
   calypso->Calypso_Enable_Compass = false; // Disable eCompass
+  
 
- // Read Calypso in Background
-    xTaskCreate(
-    [](void* pvParameters) {
-      calypso->continuousRead();
-    },
-    "Calypso Read",
-    10000,
-    calypso,
-    1,
-    NULL);
+  auto system_status_controller = sensesp_app->get_system_status_controller();
+  system_status_controller->connect_to(new LambdaConsumer<SystemStatus>([](SystemStatus status) {
+    if (status == SystemStatus::kSKWSConnected) {
+      debugI("System Status: Connected to Signal K server");
+      calypso->init();
+      // Read Calypso in Background
+      xTaskCreate(calypso_task, "Calypso Read", 5000, calypso, 2, NULL);
+      //xTaskCreate([](void* pvParameters) {calypso->continuousRead();}, "Calypso Read", 5000, calypso, 2, NULL);
+    }
+  }));
 
-    
+  
     unsigned int calypso_read_interval = 200;
 
     // Create a RepeatSensor that reads the wind speed every 200 milliseconds
@@ -172,7 +179,13 @@ calypso->init();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Initial PWM 
-pwm->begin(); // Initialize the PWM driver
+
+if (pwm->begin()) // Initialize the PWM driver
+{
+  debugI("PWM driver initialized successfully");
+} else {
+  debugE("Failed to initialize PWM driver - check I2C connections and address !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+}
 pwm->setOscillatorFrequency(27000000);
 pwm->setPWMFreq(1600);
 
@@ -183,7 +196,7 @@ const unsigned int kInterval = 10000;
    // Digital Input Seacock Valve Open
   const uint8_t kDigitalInputSCVOPin = SEACOCK_OPEN_PIN;
   
-  pinMode(kDigitalInputSCVOPin, INPUT_PULLUP);
+  pinMode(kDigitalInputSCVOPin, INPUT);
   
   auto digital_input_SCVO = std::make_shared<RepeatSensor<bool>>(
     kInterval, [kDigitalInputSCVOPin]() { return digitalRead(kDigitalInputSCVOPin); });
@@ -200,7 +213,7 @@ const unsigned int kInterval = 10000;
 
   // Digital Input Seacock Valve Close
   const uint8_t kDigitalInputSCVCPin = SEACOCK_CLOSE_PIN;
-  pinMode(kDigitalInputSCVCPin, INPUT_PULLUP);
+  pinMode(kDigitalInputSCVCPin, INPUT);
 
   auto digital_input_SCVC = std::make_shared<RepeatSensor<bool>>(
     kInterval, [kDigitalInputSCVCPin]() { return digitalRead(kDigitalInputSCVCPin); });
@@ -218,7 +231,7 @@ const unsigned int kInterval = 10000;
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Digital Input Water Sensor
   const uint8_t kWATERSENSOR_PIN = WATERSENSOR_PIN;
-  pinMode(kWATERSENSOR_PIN, INPUT_PULLUP);
+  pinMode(kWATERSENSOR_PIN, INPUT);
 
   auto digital_input_WS = std::make_shared<RepeatSensor<bool>>(
     kInterval, [kWATERSENSOR_PIN]() { return digitalRead(kWATERSENSOR_PIN); });
@@ -242,7 +255,7 @@ auto lhlkk = std::make_shared<SKValueListener<float>>(
     "electrical.inside.hoppelandkallekoje.spot.light.value", CHANGE);
     auto lhlkk_consumer = std::make_shared<LambdaConsumer<float>>(
     [](float input) {
-      pwm->setPWM(LIGHTS_HOPPELANDEKALLEKOJE_PIN, input, 0);
+      pwm->setPWM(LIGHTS_HOPPELANDEKALLEKOJE_PIN, 0, input);
       debugI("Hoppelandkallekoje Spot: %f", input);
     });
 lhlkk->connect_to(lhlkk_consumer);
@@ -253,7 +266,7 @@ auto lhlkksl = std::make_shared<SKValueListener<float>>(
     "electrical.inside.hoppelandkallekoje.ledstrip.light.value", CHANGE);
 auto lhlkksl_consumer = std::make_shared<LambdaConsumer<float>>(
     [](float input) {
-      pwm->setPWM(LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN, input, 0);
+      pwm->setPWM(LIGHTS_HOPPELANDEKALLEKOJE_LEDSTRIP_PIN, 0, input);
       debugI("Hoppelandkallekoje Streifen: %f", input);
     });
 lhlkksl->connect_to(lhlkksl_consumer);
@@ -262,7 +275,7 @@ lhlkksl->connect_to(lhlkksl_consumer);
 auto lsb = std::make_shared<SKValueListener<float>>(
     "electrical.inside.salon.port.bow.light.value", CHANGE);
 auto* lsb_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(LIGHTS_SALON_PORT_BUG_PIN, input, 0);
+    pwm->setPWM(LIGHTS_SALON_PORT_BUG_PIN, 0, input);
     debugI("Salon Port Bug: %f", input);
 });
 lsb->connect_to(lsb_consumer);
@@ -271,7 +284,7 @@ lsb->connect_to(lsb_consumer);
 auto lsa = std::make_shared<SKValueListener<float>>(
     "electrical.inside.salon.port.stern.light.value", CHANGE);
 auto* lsa_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(LIGHTS_SALON_PORT_AFTER_PIN, input, 0);
+    pwm->setPWM(LIGHTS_SALON_PORT_AFTER_PIN, 0, input);
     debugI("Salon Port After: %f", input);
 });
 lsa->connect_to(lsa_consumer);
@@ -281,7 +294,7 @@ lsa->connect_to(lsa_consumer);
 auto lpo = std::make_shared<SKValueListener<float>>(
     "electrical.inside.pantry.oven.light.value", CHANGE);
 auto* lpo_consumer = new LambdaConsumer<float>([](float input) {
-  pwm->setPWM(LIGHTS_PANTRY_OVEN_PIN, input, 0);  
+  pwm->setPWM(LIGHTS_PANTRY_OVEN_PIN, 0, input);  
     debugI("Pantry Oven: %f", input);
 });
 lpo->connect_to(lpo_consumer);
@@ -290,7 +303,7 @@ lpo->connect_to(lpo_consumer);
 auto lpc = std::make_shared<SKValueListener<float>>(
     "electrical.inside.pantry.corner.light.value", CHANGE);
 auto* lpc_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(LIGHTS_PANTRY_CORNER_PIN, input, 0);
+    pwm->setPWM(LIGHTS_PANTRY_CORNER_PIN, 0, input);
     debugI("Pantry Corner: %f", input);
 });
 lpc->connect_to(lpc_consumer);
@@ -299,7 +312,7 @@ lpc->connect_to(lpc_consumer);
 auto lps = std::make_shared<SKValueListener<float>>(
     "electrical.inside.pantry.sink.light.value", CHANGE);
 auto* lps_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(LIGHTS_PANTRY_SINK_PIN, input, 0);
+    pwm->setPWM(LIGHTS_PANTRY_SINK_PIN, 0, input);
     debugI("Pantry Sink: %f", input);
 });
 lps->connect_to(lps_consumer);
@@ -308,37 +321,37 @@ lps->connect_to(lps_consumer);
 auto lsf = std::make_shared<SKValueListener<float>>(
     "electrical.inside.salon.port.floor.light.value", CHANGE);
 auto* lsf_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(LIGHTS_SALON_FLOOR_PIN, input, 0);
+    pwm->setPWM(LIGHTS_SALON_FLOOR_PIN, 0, input);
     debugI("Salon Floor Port: %f", input);
 });
 lsf->connect_to(lsf_consumer);
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Starting Bug
-auto sh1 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.1.value", CHANGE, "Seatheater 1");
+auto sh1 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.1.value", CHANGE, "/Seatheater 1");
 auto* sh1_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(SEATHEATER_1_PIN, input, 0);
+    pwm->setPWM(SEATHEATER_1_PIN, 0, input);
     debugI("SeatHeater 1: %f", input);
 });
 sh1->connect_to(sh1_consumer);
 
-auto sh2 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.2.value", CHANGE, "Seatheater 2");
+auto sh2 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.2.value", CHANGE, "/Seatheater 2");
 auto* sh2_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(SEATHEATER_2_PIN, input, 0);
+    pwm->setPWM(SEATHEATER_2_PIN, 0, input);
     debugI("SeatHeater 2: %f", input);
 });
 sh2->connect_to(sh2_consumer);
 
-auto sh3 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.3.value", CHANGE, "Seatheater 3");
+auto sh3 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.3.value", CHANGE, "/Seatheater 3");
 auto* sh3_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(SEATHEATER_3_PIN, input, 0);
+    pwm->setPWM(SEATHEATER_3_PIN, 0, input);
     debugI("SeatHeater 3: %f", input);
 });
 sh3->connect_to(sh3_consumer);
 
-auto sh4 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.4.value", CHANGE, "Seatheater 4");
+auto sh4 = new SKValueListener<float>("electrical.inside.salon.port.seatheater.4.value", CHANGE, "/Seatheater 4");
 auto* sh4_consumer = new LambdaConsumer<float>([](float input) {
-    pwm->setPWM(SEATHEATER_4_PIN, input, 0);
+    pwm->setPWM(SEATHEATER_4_PIN, 0, input);
     debugI("SeatHeater 4: %f", input);
 });
 sh4->connect_to(sh4_consumer);
